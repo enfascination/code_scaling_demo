@@ -4,6 +4,12 @@ This is a demo for walking you through the kinds of things that go wrong when yo
 
 
 # Getting started
+## Prereqs
+*  You have to know how to open and type things into your shell/terminal/Terminal.app/PowerShell/bash/command line
+*  You have to know how to clone a repo and navigate to it in shell
+*  You have to be able to install command line software, namely `zstandard`/`zstd`
+*  You need Python and its ecosystem (you probably have it: type Python in shell and see what happens)
+
 ## Installations
 zstandard is a fancy zip that pushshift uses to compress its tweets.  You need both the commmand line tool and python library to work with that data in this demo..
   *  Using apt, conda, homebrew, ports, whatever, install command line tool [zstd](https://www.google.com/search?q=install+zstd)
@@ -22,7 +28,7 @@ In your terminal
 ```shell
 mkdir data
 cd data
-wget https://files.pushshift.io/twitter/verified_feed/TW_verified_2019-10-20.zst data/
+wget https://files.pushshift.io/twitter/verified_feed/TW_verified_2019-10-20.zst .
 zstd -dvf TW_verified_2019-10-20.zst
 cd ..
 ```
@@ -48,7 +54,7 @@ python process_tweets1BAD.py data/TW_verified_2019-10-20
 time python process_tweets2GOOD.py data/TW_verified_2019-10-20
 # ^ preceding a line with time makes it print out how long a command took to run.  You want to watch the last number, the wall clock time. 
 ```
-Questions to ask yourself:
+_Questions to ask yourself_:
   *  Q: How long did it take to run? 
   *  Q: How much RAM did it demand of your machine?
   *  Q: What are the upsides of this approach?
@@ -64,7 +70,7 @@ Questions to ask yourself:
 time python process_tweets3GOOD4CACHE.py data/TW_verified_2019-10-20.zst
                                                                     # ^ don't forget this suffix
 ```
-Questions to ask yourself:
+_Questions to ask yourself_:
   *  Q: How long did it take to run? 
   *  Q: How much RAM did it demand of your machine?
   *  Q: How much smaller was the input file this time?
@@ -77,7 +83,7 @@ Questions to ask yourself:
 ```shell
 time python process_tweets4GREAT.py data/TW_verified_2019-10-20
 ```
-Questions to ask yourself:
+_Questions to ask yourself_:
   *  Q: How long did it take to run? 
   *  Q: How much RAM did it demand of your machine?
   *  Q: What was your CPU utilization (How many and how much CPU was used)?
