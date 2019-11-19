@@ -15,7 +15,7 @@ pip install zstandard
 Go to https://files.pushshift.io
 
 ## Download and prep the data
-The code below assumes file dated `2019-10-20`, but you can use any date from those listed on pushshift's [daily listing of verified tweets](https://files.pushshift.io/twitter/verified_feed).
+The code below assumes file dated `2019-10-20`, but you can use any date from those listed on pushshift's [daily listing of tweets by verfiied users](https://files.pushshift.io/twitter/verified_feed).
 
 In your terminal
 ```shell
@@ -23,15 +23,17 @@ mkdir data
 cd data
 wget https://files.pushshift.io/twitter/verified_feed/TW_verified_2019-10-20.zst data/
 zstd -dvf TW_verified_2019-10-20.zst
-ls -lah
+cd ..
 ```
 
 ## Peek at the data
 Check out the first part of the first line of this giant file by typing
 ```shell
+ls -lah data/
 head -c 1000 data/TW_verified_2019-10-20
 wc -l data/TW_verified_2019-10-20
 ```
+The format of this data is the JSON Lines format, one json object per line (each a tweet)
 
 # Running the analysis, several ways
 ## Read the data the wrong way
@@ -48,12 +50,12 @@ Questions to ask yourself:
   *  Q: How long did it take to run? 
   *  Q: How much RAM did it demand of your machine?
   *  Q: What are the upsides of this approach?
-     *  Standard
-     *  Straightforward
-     *  Scales pretty well
+     *  A: Standard
+     *  A: Straightforward
+     *  A: Scales pretty well
   *  Q: What are the downsides of this approach?
-     *  Just uses one core; could be faster
-     *  Have to store the whole uncompressed dataset
+     *  A: Just uses one core; could be faster
+     *  A: Have to store the whole uncompressed dataset
 
 ## Read the data a good way for storage constraints
 ```python
@@ -65,7 +67,7 @@ Questions to ask yourself:
   *  Q: How much RAM did it demand of your machine?
   *  Q: How much smaller was the input file this time?
   *  Q: What if even the zipped file is too big?
-     *  Could have streamed straight from pushshift.
+     *  A: Could have streamed straight from pushshift.
         *  This is kind of rude if you don't own the other machine
         *  And it makes network bandwidth a bottleneck
 
@@ -82,6 +84,6 @@ Questions to ask yourself:
   *  Q: What are the downsides of this approach?
      *  A: More complicated (Certainly took me a while to figure out)
         *  Especially for this use case: reading a large file
+        *  (There are better uses for parellelism than reading files)
      *  A: The bottleneck becomes file IO: the low-level fact that we have to read data in from a file
-     * There are better uses for parellelism than reading files
 
