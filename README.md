@@ -4,7 +4,8 @@ This is a demo for walking you through the kinds of things that go wrong when yo
 
 
 # Getting started
-## Prepare your environment with the right packages
+## Installations
+zstandard is a fancy zip that pushshift uses to compress its tweets.  You need both the commmand line tool and python library to work with that data in this demo..
   *  Using apt, conda, homebrew, ports, whatever, install command line tool [zstd](https://www.google.com/search?q=install+zstd)
   *  In your terminal
 ```shell
@@ -27,7 +28,7 @@ cd ..
 ```
 
 ## Peek at the data
-Check out the first part of the first line of this giant file by typing
+Check out the files sizes of these giant files, the first part of the first line, and the total number of lines (tweets): 
 ```shell
 ls -lah data/
 head -c 1000 data/TW_verified_2019-10-20
@@ -37,14 +38,15 @@ The format of this data is the JSON Lines format, one json object per line (each
 
 # Running the analysis, several ways
 ## Read the data the wrong way
-***WARNING*** This could crash your machine, and will definitely slow it down.  Be prepared to shut it down when you start it.
-```python
+**WARNING** This could crash your machine, and will definitely slow it down.  Be prepared to shut it down when you start it.
+```shell
 python process_tweets1BAD.py data/TW_verified_2019-10-20
 ```
 
 ## Read the data a decent way
-```python
+```shell
 time python process_tweets2GOOD.py data/TW_verified_2019-10-20
+# ^ preceding a line with time makes it print out how long a command took to run.  You want to watch the last number, the wall clock time. 
 ```
 Questions to ask yourself:
   *  Q: How long did it take to run? 
@@ -58,7 +60,7 @@ Questions to ask yourself:
      *  A: Have to store the whole uncompressed dataset
 
 ## Read the data a good way for storage constraints
-```python
+```shell
 time python process_tweets3GOOD4CACHE.py data/TW_verified_2019-10-20.zst
                                                                     # ^ don't forget this suffix
 ```
@@ -72,7 +74,7 @@ Questions to ask yourself:
         *  And it makes network bandwidth a bottleneck
 
 ## The fastest type of way to read data: parallelized
-```python
+```shell
 time python process_tweets4GREAT.py data/TW_verified_2019-10-20
 ```
 Questions to ask yourself:
