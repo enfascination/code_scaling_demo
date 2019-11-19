@@ -1,5 +1,6 @@
 import sys
 import os
+import io
 import re
 import json
 import collections
@@ -52,6 +53,12 @@ def chug_tweet3( line ):
     lang = 1 if tw['lang'] == 'en' else 0
     return( (tweet_count, len(tags), lang) )
 
+def chug_tweet4( tw ):
+    tags = re.findall( '(#\w+)', tw['full_text'])
+    tweet_count = 1
+    lang = 1 if tw['lang'] == 'en' else 0
+    return( (tweet_count, len(tags), lang) )
+
 
 if analysis == 1:
     ### takes over 4 minutes and over 50GB of RAM (on a 6.5GB dataset tht is 0.5GB compressed), and it crashes.
@@ -74,24 +81,29 @@ elif analysis == 2:
     print( tag_counts )
     print( en_lang )
 elif analysis == 3:
-    ### from https://stackoverflow.com/questions/6832554/multiprocessing-how-do-i-share-a-dict-among-multiple-processes
-    from itertools import repeat
-    import multiprocessing as mp
-    import os
-    import pprint
+    ### Takes a bit longer, and plenty of RAM
+    ###  But it worked on a 0.5 GB dataset instead of a 0.5 GB dataset!, 
+    import zstandard as zstd
 
+    ### Counters
     tw_count = 0
-    def process_json(line, tw_count=tw_count):
-        vtw = json.loads( line.strip().strip('\x00') )
-        tw_count = chug_tweet_basic( vtw, tw_count )
-        return( tw_count)
+    tag_counts = 0
+    en_lang = 0
 
-    tweets = open( "data/TW_verified_2019-06-02" )
-    with mp.Manager() as manager:
-        d = manager.dict()
-        with manager.Pool() as pool:
-            pool.map( process_json, tweets.readlines(), chunksize=10000 )
-    print("parallel 1", tw_count )
+    ### Iterate through compressed file
+    ### from https://pypi.org/project/zstandard/
+    with open( "data/TW_verified_2019-06-02.zst", 'rb') as fh:
+        dctx = zstd.ZstdDecompressor()
+        stream_reader = dctx.stream_reader(fh)
+        text_stream = io.TextIOWrapper(stream_reader, encoding='utf-8')
+        for line in text_stream.readlines():
+            r = chug_tweet3( line)
+            tw_count += r[0]
+            tag_counts += r[1]
+            en_lang += r[2]
+    print( tw_count )
+    print( tag_counts )
+    print( en_lang )
 elif analysis == 4:
     ### https://medium.com/@ageitgey/quick-tip-speed-up-your-python-data-processing-scripts-with-process-pools-cf275350163a
     import concurrent.futures
@@ -159,10 +171,17 @@ elif analysis == 7:
     print("json lines approach")
     import jsonlines
     tw_count = 0
+    tag_count = 0
+    en_lang  = 0
     with jsonlines.open( "data/TW_verified_2019-06-02") as reader:
         for tweet in reader:
-            tw_count += 1
-    print( tw_count)
+            r = chug_tweet4( tweet )
+            tw_count += r[0]
+            tag_count += r[1]
+            en_lang += r[2]
+    print( tw_count )
+    print( tag_count )
+    print( en_lang )
 elif analysis == 8:
     print( "pp approach")
     import pp
@@ -181,34 +200,32 @@ elif analysis == 8:
     print( twtotal )
     job_server.print_stats()
 elif analysis == 9:
+    ### takes 20 seconds
     ### solution from https://www.blopig.com/blog/2016/08/processing-large-files-using-python/
     ### it uses good chunking, a smart approach to per-process ffile access
     import multiprocessing as mp,os
 
     tw_file = "data/TW_verified_2019-06-02" 
+
     def process_wrapper(chunkStart, chunkSize):
         resp = []
-        with open(tw_file) as f:
-            f.seek(chunkStart)
-            lines = f.readlines(chunkSize)
+        with open(tw_file, 'rb') as f:
+            ### have to read in binary for seek to work
+            f.seek(chunkStart, 0)
+            lines = f.read(chunkSize).splitlines()
             for line in lines:
-                try:
-                    result = chug_tweet3(line)
-                except:
-                    print( chunkStart)
-                    print( result )
-                    print( len(resp) )
-                    throw
+                line = str( line, 'utf-8' )
+                result = chug_tweet3(line)
                 resp.append( result )
         return( resp )
 
     def chunkify(fname,size=1024*1024):
         fileEnd = os.path.getsize(fname)
-        with open(fname,'rb') as f:
+        with open(fname, 'rb') as f: ### forced to read in binary
             chunkEnd = f.tell()
             while True:
                 chunkStart = chunkEnd
-                f.seek(size,1)
+                f.seek(size, 1)
                 f.readline()
                 chunkEnd = f.tell()
                 yield chunkStart, chunkEnd - chunkStart
@@ -217,12 +234,15 @@ elif analysis == 9:
 
     #init objects
     pool = mp.Pool( mp.cpu_count())
-    jobs = []
 
     #create jobs
+    jobs = []
+    job_count = 0
     for chunkStart,chunkSize in chunkify(tw_file):
         jobs.append( pool.apply_async(process_wrapper,(chunkStart,chunkSize)) )
+        job_count += 1
 
+    print( "jobs:", job_count)
     #wait for all jobs to finish
     tw_count = 0
     tag_count = 0
@@ -242,5 +262,47 @@ elif analysis == 9:
     print( tw_count )
     print( tag_count )
     print( en_lang )
+elif analysis == 0:
+    import multiprocessing as mp
 
+    tw_file = "data/TW_verified_2019-06-02" 
+
+    def process_wrapper(lineByte):
+        with open( tw_file ) as f:
+            f.seek(lineByte)
+            line = f.readline()
+            result = chug_tweet3(line)
+        return( result )
+
+    #init objects
+    pool = mp.Pool( mp.cpu_count() )
+    jobs = []
+
+    #create jobs
+    with open( tw_file) as f:
+        nextLineByte = f.tell()
+        line = f.readline()
+        while line:
+            jobs.append( pool.apply_async(process_wrapper,(nextLineByte, )) )
+            nextLineByte = f.tell()
+            line = f.readline()
+
+    #wait for all jobs to finish
+    tw_count = 0
+    tag_count = 0
+    en_lang  = 0
+
+    for job in jobs:
+        r = job.get()
+        tw_count += r[0]
+        tag_count += r[1]
+        en_lang += r[2]
+
+
+    #clean up
+    pool.close()
+
+    print( tw_count )
+    print( tag_count )
+    print( en_lang )
 
