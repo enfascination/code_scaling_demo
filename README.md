@@ -14,6 +14,7 @@ If you can, get as far as **Peek at the data** on your own.  Otherwise, show up 
 *  You have to know how to clone a repo and navigate to it in shell
 *  You have to be able to install command line software, namely `zstandard`/`zstd`
 *  You need Python and its ecosystem
+   *  Confirm that `python --version` gives `Python 3.something`, not `2`
    *  You need `pip`. Type it in shell and see what happens)
 *  You probably need a *package manager*: apt, conda, homebrew, ports, or something for windows.
    *  Probably go with `anaconda` if on mac or windows
