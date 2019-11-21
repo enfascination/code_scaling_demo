@@ -4,16 +4,21 @@ This is a demo for walking you through the kinds of things that go wrong when yo
 
 
 # Getting started
+If you can, get as far as **Peek at the data** on your own.  Otherwise, show up early for setup help.
+
 ## Prereqs
 *  You have to know how to open and type things into your shell/terminal/Terminal.app/PowerShell/bash/command line
 *  You have to know how to clone a repo and navigate to it in shell
 *  You have to be able to install command line software, namely `zstandard`/`zstd`
-*  You need Python and its ecosystem (you probably have it: type Python in shell and see what happens)
+*  You need Python and its ecosystem
+   *  You need `pip`. Type it in shell and see what happens)
+*  You probably need a *package manager*: apt, conda, homebrew, ports, or something for windows.
+   *  Probably go with `anaconda` if on mac or windows
 
 ## Installations
 zstandard is a fancy zip that pushshift uses to compress its tweets.  You need both the commmand line tool and python library to work with that data in this demo..
-  *  Using apt, conda, homebrew, ports, whatever, install command line tool [zstd](https://www.google.com/search?q=install+zstd)
-  *  In your terminal
+  *  Using package manager, install command line tool [zstd](https://www.google.com/search?q=install+zstd)
+  *  And for within-Python access to zstd, in your terminal type
 ```shell
 pip install zstandard
 ```
@@ -21,14 +26,20 @@ pip install zstandard
 ## Explore the potential data
 Go to https://files.pushshift.io
 
+## Pull this repo
+```
+git clone https://github.com/enfascination/code_scaling_demo.git
+cd code_scaling_demo
+```
+
 ## Download and prep the data
 The code below assumes file dated `2019-10-20`, but you can use any date from those listed on pushshift's [daily listing of tweets by verfiied users](https://files.pushshift.io/twitter/verified_feed).
 
-In your terminal
+In your terminal, run the following commands one at a time
 ```shell
 mkdir data
 cd data
-wget https://files.pushshift.io/twitter/verified_feed/TW_verified_2019-10-20.zst .
+curl -O http://files.pushshift.io/twitter/verified_feed/TW_verified_2019-10-20.zst
 zstd -dvf TW_verified_2019-10-20.zst
 cd ..
 ```
@@ -36,9 +47,9 @@ cd ..
 ## Peek at the data
 Check out the files sizes of these giant files, the first part of the first line, and the total number of lines (tweets): 
 ```shell
-ls -lah data/
-head -c 1000 data/TW_verified_2019-10-20
-wc -l data/TW_verified_2019-10-20
+ls -lah data/                             # <- how big are the zipped and unzipped files?
+head -c 1000 data/TW_verified_2019-10-20  # <- what's in the file?
+wc -l data/TW_verified_2019-10-20         # <- how many tweets are in the file?
 ```
 The format of this data is the JSON Lines format, one json object per line (each a tweet)
 
@@ -95,3 +106,9 @@ _Questions to ask yourself_:
         *  (There are better uses for parellelism than reading files)
      *  A: The bottleneck becomes file IO: the low-level fact that we have to read data in from a file
 
+----------
+# TODO
+
+ *  Improve instructions for vanilla setup
+   *  either assume conda or provide a cross platform gui installation of zstandard
+   *  windows instructions (powershell, that free ubuntu VM?)
