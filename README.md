@@ -2,6 +2,9 @@
 
 This is a demo for walking you through the kinds of things that go wrong when you are analyzing big datasets, and what you can do about them. We pull down a large dataset of tweets and calculate some simple descriptives over them.  We do this several times in several ways, demonstrate the naive approach, the standard approach, the disk-space friendly approach, and the fully parallelized approach in turn.
 
+## Presentation
+In addition to being a code demo, their is also a lecture on high-level strategies for scaling your data science code.  You'll find it in 
+`presentations/Code_scaling_strategies.pdf`.
 
 # Getting started
 If you can, get as far as **Peek at the data** on your own.  Otherwise, show up early for setup help.
